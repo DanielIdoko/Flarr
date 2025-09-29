@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: node:20-alpine
+    container_name: mern-frontend
+    working_dir: /app
+    volumes:
+      - ../../frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+    command: sh -c "npm install && npm run dev"
