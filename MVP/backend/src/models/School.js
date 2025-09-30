@@ -7,6 +7,7 @@ const SchoolSchema = new mongoose.Schema(
       trim: true,
       minLength: 20,
       required: [true, "School location is needed"],
+      lowercase: true,
     },
     school_website: {
       type: String,
@@ -16,8 +17,16 @@ const SchoolSchema = new mongoose.Schema(
       ],
       required: [true, "School website is required"],
     },
-    school_code: String,
-    school_state: String,
+    school_code: {
+      type: String,
+      required: [true, "School code is required"],
+      trim: true,
+    },
+    school_state: {
+      type: String,
+      required: [true, "School state is required"],
+      trim: true,
+    },
     sector: {
       type: String,
       lowercase: true,
@@ -25,16 +34,19 @@ const SchoolSchema = new mongoose.Schema(
       enum: ["PUBLIC", "PRIVATE"],
     },
     level_offered: {
-        type: String,
-        lowercase: true,
-        trim: true,
-        enum: ['JSS only', 'SSS only', 'JSS and SSS', 'PRIVATE']
+      type: String,
+      lowercase: true,
+      trim: true,
+      enum: ["JSS only", "SSS only", "JSS and SSS", "PRIVATE"],
+      default: "",
     },
     level_of_education: {
       type: String,
       lowercase: true,
-      enum: ['Junior Secondary', 'Senior Secondary']
-    }
+      trim: true,
+      enum: ["Junior Secondary", "Senior Secondary"],
+      default: "",
+    },
   },
   { timestamps: true }
 );

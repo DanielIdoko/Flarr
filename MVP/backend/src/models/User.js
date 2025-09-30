@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
     },
     username: {
       type: String,
-      required: [true, "User name is required"],
+      required: [true, "Username is required"],
       trim: true,
     },
     firstname: {
@@ -27,7 +27,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["school", "youth", "client"],
+      enum: ["School", "Youth", "Client"],
+      lowercase: true
     },
     avatarUrl: {
       type: String,

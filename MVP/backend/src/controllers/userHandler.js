@@ -44,7 +44,6 @@ export const getUserData = async (req, res) => {
 /**
  * @description Save user to database, after a user signs up with clerk, i used clerk's webhook to listen for events such as the 'user.created' event which allowed me to get the newly created user and save to our oen database.
  * @access Public
- * @route POST '/save-user
  *  **/
 export const handleSaveUsertoDatabase = async (event) => {
   const { id, first_name, last_name, email_addresses, username, image_url } =
@@ -61,7 +60,7 @@ export const handleSaveUsertoDatabase = async (event) => {
       clerkId: id, // Store Clerk User ID for lookups
       firstname: first_name,
       username: username,
-      lastName: last_name,
+      lastname: last_name,
       email: primaryEmail,
       avatarUrl: image_url,
       // preferences,
@@ -73,6 +72,52 @@ export const handleSaveUsertoDatabase = async (event) => {
   }
 };
 
+/**
+ * @description Delete a user from database
+ * @access User
+ *  **/
+export const handleDeleteUserFromDatabase = async (event) => {
+  const { id } = event.data;
+  try {
+    // Find user from database
+    const user = await User.findOneAndDelete({ clerkId: id });
+    console.log(`User Deleted in DB successfully: ${id}`);
+  } catch (dbError) {
+    console.error("Database error on user creation:", dbError);
+  }
+};
+/**
+ * @description Update user profie
+ * @access User
+ *  **/
+export const handleUpdateUser = async (event) => {
+  const { id, first_name, last_name, email_addresses, username, image_url } =
+    event.data;
+
+  // The data we want to be updated by the user that will reflect in the database
+  const updatesData = {
+    $set: {
+      firstname: first_name,
+      lastname: last_name,
+      email_addresses: email_addresses,
+      username: username,
+      image_url: image_url,
+    },
+  };
+  try {
+    // Action if user was found
+    // Save the updated data in our database
+    const updatedUser = await User.findOneAndUpdate(
+      { clerkId: id },
+      updatesData,
+      { new: true, upsert: true }
+    );
+
+    console.log(`User Updated in DB successfully: ${id}`);
+  } catch (dbError) {
+    console.error("Database error on user creation:", dbError);
+  }
+};
 
 /**
  * @description Handle webhook event
@@ -83,12 +128,24 @@ export const handleUserEvent = async (req, res) => {
   // The verified payload is on req.webHookEvent
   const event = req.webHookEvent;
 
-  // Event for when a user is created
-  if (event.type === "user.created") {
-    await handleSaveUsertoDatabase(event);
-  }
-  // Event for when a user was deleted
+  // Handle switch statements for event.type
+  switch (event.type) {
+    case "user.created":
+      await handleSaveUsertoDatabase(event);
+      break;
 
+    case "user.deleted":
+      await handleDeleteUserFromDatabase(event, res);
+      break;
+
+    case "user.updated":
+      await handleUpdateUser(event);
+      break;
+
+    default:
+      console.log("Webhook processed successfully!");
+      break;
+  }
   // A 200 OK response tells Clerk the webhook was received successfully.
   res.status(200).json({ success: true, message: "Webhook processed" });
 };

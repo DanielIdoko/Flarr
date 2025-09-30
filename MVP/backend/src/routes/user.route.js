@@ -7,7 +7,7 @@ const userRoute = Router();
 // endpoints
 userRoute.get("/me", getUserData);
 userRoute.post(
-  "/save-user",
+  "/user",
   // Middleware to get the raw body
   bodyParser.raw({ type: "application/json" }),
   // Middleware to verify and parse the body

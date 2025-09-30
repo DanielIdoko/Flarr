@@ -18,7 +18,7 @@ const app = express();
 
 // routes
 app.use("/api/v1/schools", schoolsRoute);
-app.use("/api/v1/user", userRoute);
+app.use("/api/v1/users", userRoute);
 
 
 // Express Middlewares
