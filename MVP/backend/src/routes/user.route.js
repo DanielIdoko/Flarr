@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getUserData, saveUserToDatabase } from "../controllers/userHandler.js";
+import { getUserData, handleUserEvent } from "../controllers/userHandler.js";
 import bodyParser from "body-parser";
 import verifyWebhook from "../utils/verifyWebHook.js";
 const userRoute = Router();
@@ -12,6 +12,6 @@ userRoute.post(
   bodyParser.raw({ type: "application/json" }),
   // Middleware to verify and parse the body
   verifyWebhook,
-  saveUserToDatabase
+  handleUserEvent
 );
 export default userRoute;

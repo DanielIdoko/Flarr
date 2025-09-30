@@ -46,43 +46,49 @@ export const getUserData = async (req, res) => {
  * @access Public
  * @route POST '/save-user
  *  **/
+export const handleSaveUsertoDatabase = async (event) => {
+  const { id, first_name, last_name, email_addresses, username, image_url } =
+    event.data;
 
-export const saveUserToDatabase = async (req, res) => {
+  // Extract the primary email address
+  const primaryEmail = email_addresses.find(
+    (email) => email.id === event.data.primary_email_address_id
+  )?.email_address;
+
+  try {
+    // Save the user to MongoDB database
+    const newUser = await User.create({
+      clerkId: id, // Store Clerk User ID for lookups
+      firstname: first_name,
+      username: username,
+      lastName: last_name,
+      email: primaryEmail,
+      avatarUrl: image_url,
+      // preferences,
+    });
+
+    console.log(`User created in DB: ${id}`);
+  } catch (dbError) {
+    console.error("Database error on user creation:", dbError);
+  }
+};
+
+
+/**
+ * @description Handle webhook event
+ * @access User
+ *  **/
+
+export const handleUserEvent = async (req, res) => {
   // The verified payload is on req.webHookEvent
   const event = req.webHookEvent;
 
+  // Event for when a user is created
   if (event.type === "user.created") {
-    const { id, first_name, last_name, email_addresses, username } = event.data;
-
-    // Extract the primary email address
-    const primaryEmail = email_addresses.find(
-      (email) => email.id === event.data.primary_email_address_id
-    )?.email_address;
-
-    try {
-      // Save the user to MongoDB database
-      const newUser = await User.insertOne({
-        clerkId: id, // Store Clerk User ID for lookups
-        firstname: first_name,
-        username: username,
-        lastName: last_name,
-        email: primaryEmail,
-        avatarUrl: '',
-        // preferences,
-      });
-
-      console.log(`User created in DB: ${id}`);
-    } catch (dbError) {
-      console.error("Database error on user creation:", dbError);
-      // It's important to still return a 200/202 to Clerk to avoid retries,
-      // but log the error for manual investigation.
-      return res.status(202).json({
-        success: true,
-        message: "Database save failed, but event received.",
-      });
-    }
+    await handleSaveUsertoDatabase(event);
   }
+  // Event for when a user was deleted
 
   // A 200 OK response tells Clerk the webhook was received successfully.
-  res.status(200).json({ success: true });
+  res.status(200).json({ success: true, message: "Webhook processed" });
 };
